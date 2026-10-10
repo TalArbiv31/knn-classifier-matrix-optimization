@@ -1,185 +1,146 @@
-
-//Task 2
 public class FlatMatrix implements Matrix {
 
     private double[] mat;
     private int rows;
     private int cols;
 
-
+    // Constructs a FlatMatrix with the given rows and cols, with zeros in all cells.
     // Requires: 'rows' > 0, 'cols' > 0
-    // Constructs a FlatMatrix with the given rows and cols, with zeros in all cells
     public FlatMatrix(int rows, int cols) {
-        // ---------------write your code BELOW this line only! ------------------
         if (rows <= 0 || cols <= 0) {
-            throw new IllegalArgumentException("Matrix dimensions must be positive");
+            throw new IllegalArgumentException("Matrix dimensions must be positive.");
         }
         this.rows = rows;
         this.cols = cols;
         this.mat = new double[rows * cols];
-        // ---------------write your code ABOVE this line only! ------------------
     }
 
-
-    // Requires: 'mat' be a matrix of nxm
-    // Constructs a FlatMatrix with the same values as 'mat'
+    // Constructs a FlatMatrix with the same values as the provided Matrix 'mat'.
+    // Requires: 'mat' is not null
     public FlatMatrix(Matrix mat) {
-        // ---------------write your code BELOW this line only! ------------------
         if (mat == null) {
-            throw new IllegalArgumentException("Input matrix cannot be null");
+            throw new IllegalArgumentException("Input matrix cannot be null.");
         }
         this.rows = mat.getNumRows();
         this.cols = mat.getNumCols();
         this.mat = new double[this.rows * this.cols];
+        
         for (int i = 0; i < this.rows; i++) {
             for (int j = 0; j < this.cols; j++) {
                 this.mat[i * this.cols + j] = mat.get(i, j);
             }
         }
-        // ---------------write your code ABOVE this line only! ------------------
     }
 
-
-    // Requires: 'mat' is not null
-    // Constructs a FlatMatrix with the same values as 'mat'
+    // Constructs a FlatMatrix from a 2D double array.
+    // Requires: 'mat' is not null and not empty.
     public FlatMatrix(double[][] mat) {
-        // ---------------write your code BELOW this line only! ------------------
         if (mat == null) {
-            throw new IllegalArgumentException("Input matrix cannot be null");
+            throw new IllegalArgumentException("Input matrix cannot be null.");
         }
+        if (mat.length == 0 || mat[0].length == 0) {
+             throw new IllegalArgumentException("Input matrix cannot be empty.");
+        }
+        
         this.rows = mat.length;
         this.cols = mat[0].length;
         this.mat = new double[this.rows * this.cols];
+        
         for (int i = 0; i < this.rows; i++) {
             for (int j = 0; j < this.cols; j++) {
                 this.mat[i * this.cols + j] = mat[i][j];
             }
         }
-        // ---------------write your code ABOVE this line only! ------------------
     }
 
-    // Requires: 'row' and 'col' are legal indices in the matrix
-    // Returns the value in the corresponding row and col in the matrix
+    // Returns the value in the corresponding row and col in the matrix.
+    // Requires: 'i' and 'j' are legal indices in the matrix.
     @Override
     public double get(int i, int j) {
-        double ans = 0;
-        // ---------------write your code BELOW this line only! ------------------
         if (i < 0 || i >= this.rows || j < 0 || j >= this.cols) {
-            throw new IllegalArgumentException("Index (" + i + "," + j + ") is out of bounds");
+            throw new IllegalArgumentException("Index (" + i + "," + j + ") is out of bounds.");
         }
-        ans = this.mat[i * this.cols + j];
-        // ---------------write your code ABOVE this line only! ------------------
-        return ans;
+        return this.mat[i * this.cols + j];
     }
 
-    // Requires: 'row' and 'col' are legal indices in the matrix
-    // changes the value in the corresponding row and col in the matrix with 'value'
+    // Changes the value in the corresponding row and col in the matrix with 'value'.
+    // Requires: 'i' and 'j' are legal indices in the matrix.
     @Override
     public void set(int i, int j, double value) {
-        // ---------------write your code BELOW this line only! ------------------
         if (i < 0 || i >= this.rows || j < 0 || j >= this.cols) {
-            throw new IllegalArgumentException("Index (" + i + "," + j + ") is out of bounds");
+            throw new IllegalArgumentException("Index (" + i + "," + j + ") is out of bounds.");
         }
         this.mat[i * this.cols + j] = value;
-        // ---------------write your code ABOVE this line only! ------------------
     }
 
-    // Returns the number of rows of the matrix
+    // Returns the number of rows of the matrix.
     @Override
     public int getNumRows() {
-        int ans = 0;
-        // ---------------write your code BELOW this line only! ------------------
-        ans = this.rows;
-        // ---------------write your code ABOVE this line only! ------------------
-        return ans;
+        return this.rows;
     }
 
-    // Returns the number of rows of the matrix
+    // Returns the number of columns of the matrix.
     @Override
     public int getNumCols() {
-        int ans = 0;
-        // ---------------write your code BELOW this line only! ------------------
-        ans = this.cols;
-        // ---------------write your code ABOVE this line only! ------------------
-        return ans;
+        return this.cols;
     }
 
-    // Returns true if the matrix is square
+    // Returns true if the matrix is square.
     @Override
     public Boolean isSquare() {
-        boolean ans = false;
-        // ---------------write your code BELOW this line only! ------------------
-        ans = (this.rows == this.cols);
-        // ---------------write your code ABOVE this line only! ------------------
-        return ans;
+        return (this.rows == this.cols);
     }
 
     // Creates a deep copy of the matrix.
-    // (a) the new matrix has the same numbers of
-    // rows and columns as the creating matrix.
-    // (b) The values in the corresponding cells are
-    // the same.
-    // (c) Changing a value in one matrix does not change the
-    // other.
     @Override
     public Matrix copy() {
-        Matrix ans = null;
-        // ---------------write your code BELOW this line only! ------------------
-        ans = new FlatMatrix(this.rows, this.cols);
+        Matrix ans = new FlatMatrix(this.rows, this.cols);
         for (int i = 0; i < this.rows; i++) {
             for (int j = 0; j < this.cols; j++) {
                 ans.set(i, j, this.get(i, j));
             }
         }
-        // ---------------write your code ABOVE this line only! ------------------
         return ans;
     }
 
-    // Creates a new matrix, which is the transpose of the
-    // creating matrix.
+    // Creates a new matrix, which is the transpose of the creating matrix.
     @Override
     public Matrix transpose() {
-        Matrix ans = null;
-        // ---------------write your code BELOW this line only! ------------------
-        ans = new FlatMatrix(this.cols, this.rows);
+        Matrix ans = new FlatMatrix(this.cols, this.rows);
         for (int i = 0; i < this.rows; i++) {
             for (int j = 0; j < this.cols; j++) {
                 ans.set(j, i, this.get(i, j));
             }
         }
-        // ---------------write your code ABOVE this line only! ------------------
         return ans;
     }
 
-    // Returns if 'other' equals the FlatMatrix
+    // Returns true if 'other' equals the FlatMatrix.
     @Override
     public boolean equals(Object other) {
-        boolean ans = false;
-        // ---------------write your code BELOW this line only! ------------------
+        if (this == other) {
+             return true;
+        }
         if (other instanceof Matrix) {
             Matrix otherMat = (Matrix) other;
-            if (this.rows == otherMat.getNumRows() && this.cols == otherMat.getNumCols()) {
-                ans = true;
-                for (int i = 0; i < this.rows && ans; i++) {
-                    for (int j = 0; j < this.cols && ans; j++) {
-                        if (this.get(i, j) != otherMat.get(i, j)) {
-                            ans = false;
-                        }
+            if (this.rows != otherMat.getNumRows() || this.cols != otherMat.getNumCols()) {
+                 return false;
+            }
+            for (int i = 0; i < this.rows; i++) {
+                for (int j = 0; j < this.cols; j++) {
+                     // Using Double.compare for safe floating-point comparison
+                    if (Double.compare(this.get(i, j), otherMat.get(i, j)) != 0) {
+                        return false;
                     }
                 }
             }
+            return true;
         }
-        // ---------------write your code ABOVE this line only! ------------------
-        return ans;
+        return false;
     }
-
 
     @Override
     public String toString() {
-        String ans = "";
-        // ---------------write your code BELOW this line only! ------------------
-        ans = "FlatMatrix " + this.rows + " X " + this.cols;
-        // ---------------write your code ABOVE this line only! ------------------
-        return ans;
+        return "FlatMatrix " + this.rows + " X " + this.cols;
     }
 }
