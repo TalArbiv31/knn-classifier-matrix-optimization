@@ -25,6 +25,9 @@ public class IndexComparator implements Comparator<Integer> {
         if (o1 == null || o2 == null) {
             throw new IllegalArgumentException("Index arguments cannot be null.");
         }
+        if (o1 < 0 || o1 >= this.mat.getNumCols() || o2 < 0 || o2 >= this.mat.getNumCols()) {
+            throw new IllegalArgumentException("Index arguments are out of matrix column bounds.");
+        }
         
         double dist1 = this.mat.get(this.row, o1);
         double dist2 = this.mat.get(this.row, o2);
