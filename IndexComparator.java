@@ -1,38 +1,34 @@
-
 import java.util.Comparator;
 
+/**
+ * Comparator designed to sort indices based on their corresponding 
+ * distance values within a specific row of a distance matrix.
+ */
 public class IndexComparator implements Comparator<Integer> {
 
-    double[] array;
-    private Matrix mat;
-    private int row;
+    private final Matrix mat;
+    private final int row;
 
-    public IndexComparator(Matrix m, int row){
-        // ---------------write your code BELOW this line only! ------------------
+    public IndexComparator(Matrix m, int row) {
         if (m == null) {
-            throw new IllegalArgumentException("Matrix cannot be null");
+            throw new IllegalArgumentException("Matrix cannot be null.");
         }
         if (row < 0 || row >= m.getNumRows()) {
-            throw new IllegalArgumentException("Invalid row index");
+            throw new IllegalArgumentException("Invalid row index: " + row);
         }
         this.mat = m;
         this.row = row;
-        // ---------------write your code ABOVE this line only! ------------------
     }
 
     @Override
     public int compare(Integer o1, Integer o2) {
-        int ans = 0;
-        // ---------------write your code BELOW this line only! ------------------
-        double dist1 = mat.get(this.row, o1);
-        double dist2 = mat.get(this.row, o2);
-        if (dist1 < dist2) {
-            ans = -1;
+        if (o1 == null || o2 == null) {
+            throw new IllegalArgumentException("Index arguments cannot be null.");
         }
-        else if (dist1 > dist2) {
-            ans = 1;
-        }
-        // ---------------write your code ABOVE this line only! ------------------
-        return ans;
+        
+        double dist1 = this.mat.get(this.row, o1);
+        double dist2 = this.mat.get(this.row, o2);
+        
+        return Double.compare(dist1, dist2);
     }
 }
