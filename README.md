@@ -17,6 +17,8 @@ When processing massive datasets, standard 2D arrays suffer from cache misses du
 * **Contiguous Memory Buffers:** Re-implemented standard 2D arrays as contiguous 1D memory buffers in row-major order.
 * **Spatial Locality:** Significantly enhances CPU cache utilization, reducing memory access overhead for intensive linear algebra operations and distance calculations.
 
+> ** Benchmark Result:** Running a matrix multiplication test ($800 \times 800$ elements) proves that the contiguous `FlatMatrix` implementation is **~2.5x faster** than standard Java 2D arrays (`double[][]`) purely due to CPU spatial cache locality. *(See `PerformanceBenchmark.java`)*
+
 ```mermaid
 graph LR
     subgraph Sub1 [Standard 2D Array - Cache Misses]
@@ -69,5 +71,7 @@ graph TD
 ├── FlatMatrix.java          # High-performance 1D array-based matrix implementation
 ├── MatrixOperations.java    # Linear algebra computations (Z-score normalization, squared distances)
 ├── IndexComparator.java     # Custom comparator for sorting instances by distance indices
-└── MatrixUtils.java         # Static helper and utility functions
+├── DemoHRClassifier.java    # End-to-end classification demo using simulated HR data
+└── PerformanceBenchmark.java # CPU cache locality benchmark for matrix multiplication
+
 ```
