@@ -7,12 +7,15 @@ Inspired by this domain, I built this Java implementation of a **k-Nearest Neigh
 
 This project bridges practical data analysis experience with core computer science algorithmic design, focusing heavily on runtime efficiency, memory optimization, and hardware-aware programming.
 
+---
+
 ## Core Features & Optimizations
 
 ### 1. Performance & Memory Optimization (`FlatMatrix`)
-When processing massive datasets, standard 2D arrays suffer from cache misses due to fragmented memory allocation. 
-- Re-implemented standard 2D arrays as **contiguous 1D memory buffers** in row-major order.
-- Significantly enhances spatial locality and CPU cache utilization, reducing memory access overhead for intensive linear algebra operations and distance calculations.
+When processing massive datasets, standard 2D arrays suffer from cache misses due to fragmented pointer-based memory allocation. 
+
+* **Contiguous Memory Buffers:** Re-implemented standard 2D arrays as contiguous 1D memory buffers in row-major order.
+* **Spatial Locality:** Significantly enhances CPU cache utilization, reducing memory access overhead for intensive linear algebra operations and distance calculations.
 
 ```mermaid
 graph LR
@@ -26,12 +29,11 @@ graph LR
         F1[Row 0, Row 1, Row 2] ===> M4[Contiguous Memory Block]
     end
 ```
-2. Machine Learning Pipeline (k-NN Classifier)
-Distance Computation: Computes vectorized squared distance matrices efficiently.
 
-Data Normalization: Implemented a built-in Z-score normalization mechanism to standardize multi-dimensional features (e.g., standardizing different scales like psychometric scores vs. physical distances) so no single feature dominates the model.
-
-Custom Sorting: Utilizes a custom IndexComparator and selection sorting to rapidly identify nearest neighbors and perform majority voting without losing track of the original data indices.
+### 2. Machine Learning Pipeline (k-NN Classifier)
+* **Vectorized Distance Computation:** Computes squared distance matrices efficiently across sample batches.
+* **Data Normalization:** Features a built-in Z-score normalization mechanism to standardize multi-dimensional features (e.g., psychometric scores vs. physical distances) so no single scale dominates the model.
+* **Optimized Neighbor Selection:** Utilizes a custom `IndexComparator` and sorting routines to rapidly identify nearest neighbors and perform majority voting without losing track of original sample indices.
 
 ```mermaid
 graph TD
@@ -46,18 +48,26 @@ graph TD
     H -->|Low Risk| J[Proceed to Regular Placement]
 ```
 
-Technologies & Principles
-Language: Java
+---
 
-Core Concepts: Object-Oriented Programming (OOP), Custom Interfaces, Dynamic Array Mapping, Matrix Operations, Algorithm Efficiency, Cache Locality.
+## Technologies & Principles
 
-Project Structure
-Matrix.java – Core matrix interface defining arithmetic and manipulation methods.
+* **Language:** Java
+* **Core Concepts:** 
+  * Cache Locality & Hardware-Aware Design
+  * Dynamic 1D-to-2D Index Mapping
+  * Matrix Operations & Linear Algebra
+  * Custom Sorting & Comparators
+  * Object-Oriented Design (Clean Interfaces & Polymorphism)
 
-FlatMatrix.java – High-performance 1D array-based matrix implementation.
+---
 
-MatrixOperations.java – Linear algebra computations (addition, multiplication, squared distances, normalizations).
+## Project Structure
 
-IndexComparator.java – Custom comparator for sorting training instances by feature distances.
-
-MatrixUtils.java – Helper utility functions.
+```text
+├── Matrix.java              # Core matrix interface defining arithmetic and manipulation methods
+├── FlatMatrix.java          # High-performance 1D array-based matrix implementation
+├── MatrixOperations.java    # Linear algebra computations (Z-score normalization, squared distances)
+├── IndexComparator.java     # Custom comparator for sorting instances by distance indices
+└── MatrixUtils.java         # Static helper and utility functions
+```
