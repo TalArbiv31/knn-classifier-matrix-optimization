@@ -130,5 +130,15 @@ public class PerformanceBenchmark {
             // Not required for this benchmark
             return null;
         }
+        @Override
+       public Matrix copy() {
+       double[][] newGrid = new double[this.rows][this.cols];
+        for (int i = 0; i < this.rows; i++) {
+           for (int j = 0; j < this.cols; j++) {
+                 newGrid[i][j] = this.grid[i][j];
+            }
+         }
+       return new Standard2DMatrix(newGrid);
+       }
     }
 }
