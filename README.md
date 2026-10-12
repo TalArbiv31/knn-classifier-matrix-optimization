@@ -11,18 +11,19 @@ This project bridges practical data analysis experience with core computer scien
 
 ### 1. Performance & Memory Optimization (`FlatMatrix`)
 When processing massive datasets, standard 2D arrays suffer from cache misses due to fragmented memory allocation. 
-* Re-implemented standard 2D arrays as **contiguous 1D memory buffers** in row-major order.
-* Significantly enhances spatial locality and CPU cache utilization, reducing memory access overhead for intensive linear algebra operations and distance calculations.
+- Re-implemented standard 2D arrays as **contiguous 1D memory buffers** in row-major order.
+- Significantly enhances spatial locality and CPU cache utilization, reducing memory access overhead for intensive linear algebra operations and distance calculations.
+
 ```mermaid
 graph LR
-    subgraph Standard 2D Array (Cache Misses)
-        R0[Row 0] -.-> M1(Memory Addr 100)
-        R1[Row 1] -.-> M2(Memory Addr 500)
-        R2[Row 2] -.-> M3(Memory Addr 250)
+    subgraph Sub1 [Standard 2D Array - Cache Misses]
+        R0[Row 0] -.-> M1[Memory Addr 100]
+        R1[Row 1] -.-> M2[Memory Addr 500]
+        R2[Row 2] -.-> M3[Memory Addr 250]
     end
 
-    subgraph FlatMatrix (Cache Friendly)
-        F1[Row 0 | Row 1 | Row 2] ===> M4(Contiguous Memory Block)
+    subgraph Sub2 [FlatMatrix - Cache Friendly]
+        F1[Row 0, Row 1, Row 2] ===> M4[Contiguous Memory Block]
     end
 
 ### 2. Machine Learning Pipeline (k-NN Classifier)
