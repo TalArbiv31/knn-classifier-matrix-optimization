@@ -121,7 +121,7 @@ public class PerformanceBenchmark {
         }
 
         @Override
-        public boolean isSquare() {
+        public Boolean isSquare() {
             return getNumRows() == getNumCols();
         }
 
