@@ -13,6 +13,7 @@ This project bridges practical data analysis experience with core computer scien
 When processing massive datasets, standard 2D arrays suffer from cache misses due to fragmented memory allocation. 
 * Re-implemented standard 2D arrays as **contiguous 1D memory buffers** in row-major order.
 * Significantly enhances spatial locality and CPU cache utilization, reducing memory access overhead for intensive linear algebra operations and distance calculations.
+```mermaid
 graph LR
     subgraph Standard 2D Array (Cache Misses)
         R0[Row 0] -.-> M1(Memory Addr 100)
