@@ -2,58 +2,70 @@ import java.util.Random;
 
 public class PerformanceBenchmark {
 
+    // Matrix dimensions large enough to emphasize CPU cache misses
+    private static final int ROWS = 800;
+    private static final int COLS = 800;
+    private static final long RANDOM_SEED = 42L;
+
     public static void main(String[] args) {
         System.out.println("--- Performance Benchmark: Cache Locality ---");
-        
-        // הגדרת גודל מטריצה מספיק גדול כדי שהמעבד ירגיש את קפיצות הזיכרון
-        int rows = 800; 
-        int cols = 800;
-        
-        System.out.println("[*] Generating " + rows + "x" + cols + " matrices...");
-        double[][] rawData1 = generateRandomData(rows, cols);
-        double[][] rawData2 = generateRandomData(rows, cols);
-        
-        // יצירת המטריצות שלנו (הרציפה מול המפוצלת)
+
+        System.out.println("[*] Generating " + ROWS + "x" + COLS + " matrices...");
+        double[][] rawData1 = generateRandomData(ROWS, COLS, RANDOM_SEED);
+        double[][] rawData2 = generateRandomData(ROWS, COLS, RANDOM_SEED + 1);
+
+        // Instantiate both implementations (contiguous 1D vs fragmented 2D array)
         Matrix flatMat1 = createFlatMatrix(rawData1);
         Matrix flatMat2 = createFlatMatrix(rawData2);
-        
+
         Matrix stdMat1 = new Standard2DMatrix(rawData1);
         Matrix stdMat2 = new Standard2DMatrix(rawData2);
 
-        System.out.println("[*] Warming up JVM (to ensure fair CPU test)...");
-        // הרצה קטנה 'על ריק' כדי שה-JVM יקמפל את הקוד ל-Machine Code לפני המדידה האמיתית
-        MatrixOperations.multiply(createFlatMatrix(new double[50][50]), createFlatMatrix(new double[50][50]));
+        // Warm up the JVM to trigger JIT compilation before benchmarking
+        System.out.println("[*] Warming up JVM (to ensure fair JIT compilation)...");
+        warmUpJvm();
 
         System.out.println("[*] Running Benchmark (Matrix Multiplication O(n^3))...\n");
 
-        // 1. מדידת זמן למערך דו-ממדי רגיל (Cache Misses)
-        long start2D = System.currentTimeMillis();
+        // 1. Benchmark Standard 2D Array (non-contiguous memory, pointer chasing)
+        long start2D = System.nanoTime();
         MatrixOperations.multiply(stdMat1, stdMat2);
-        long end2D = System.currentTimeMillis();
-        long time2D = end2D - start2D;
-        System.out.println("Standard 2D Array Matrix took: " + time2D + " ms");
+        long end2D = System.nanoTime();
+        double time2DMs = (end2D - start2D) / 1_000_000.0;
+        System.out.printf("Standard 2D Array Matrix took:  %.2f ms%n", time2DMs);
 
-        // 2. מדידת זמן למערך החד-ממדי שלך (Cache Friendly)
-        long startFlat = System.currentTimeMillis();
+        // 2. Benchmark FlatMatrix (contiguous memory, spatial locality friendly)
+        long startFlat = System.nanoTime();
         MatrixOperations.multiply(flatMat1, flatMat2);
-        long endFlat = System.currentTimeMillis();
-        long timeFlat = endFlat - startFlat;
-        System.out.println("FlatMatrix (Contiguous Memory) took:  " + timeFlat + " ms");
+        long endFlat = System.nanoTime();
+        double timeFlatMs = (endFlat - startFlat) / 1_000_000.0;
+        System.out.printf("FlatMatrix (Contiguous Memory) took: %.2f ms%n", timeFlatMs);
 
-        // 3. הדפסת שורת המחץ העסקית!
+        // 3. Output comparative analysis
         System.out.println("\n--- Results ---");
-        if (timeFlat < time2D) {
-            double speedup = (double) time2D / timeFlat;
-            System.out.printf("✅ SUCCESS: FlatMatrix is %.2fx faster due to Spatial Locality!%n", speedup);
+        if (timeFlatMs < time2DMs) {
+            double speedup = time2DMs / timeFlatMs;
+            System.out.printf("SUCCESS: FlatMatrix is %.2fx faster due to Spatial Locality!%n", speedup);
         } else {
-            System.out.println("Note: Try increasing the matrix size (e.g., 1000x1000) to see the cache effect.");
+            System.out.println("Note: Try increasing matrix dimensions (e.g., 1000x1000) to amplify cache effects.");
         }
     }
 
-    // פונקציית עזר ליצירת נתונים אקראיים
-    private static double[][] generateRandomData(int rows, int cols) {
+    /**
+     * Executes a small multiplication pass to warm up JIT compiler optimizations.
+     */
+    private static void warmUpJvm() {
+        Matrix warmUpMat1 = createFlatMatrix(new double[60][60]);
+        Matrix warmUpMat2 = createFlatMatrix(new double[60][60]);
+        MatrixOperations.multiply(warmUpMat1, warmUpMat2);
+    }
+
+    /**
+     * Generates a 2D array populated with random double values using a fixed seed.
+     */
+    private static double[][] generateRandomData(int rows, int cols, long seed) {
         double[][] data = new double[rows][cols];
-        Random rand = new Random(42); // Seed קבוע כדי שהתוצאות יהיו הדירות
+        Random rand = new Random(seed);
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 data[i][j] = rand.nextDouble();
@@ -62,7 +74,9 @@ public class PerformanceBenchmark {
         return data;
     }
 
-    // פונקציית עזר להמרת המערך ל-FlatMatrix מבלי להסתמך על בנאי מסוים
+    /**
+     * Converts a standard 2D array into a FlatMatrix instance.
+     */
     private static Matrix createFlatMatrix(double[][] data) {
         int rows = data.length;
         int cols = data[0].length;
@@ -75,35 +89,46 @@ public class PerformanceBenchmark {
         return flat;
     }
 
-    /* 
-     * מחלקה פנימית שנועדה לדמות את הדרך הגרועה לניהול זיכרון (מערך של מערכים).
-     * היא מממשת את הממשק שלך כדי שנוכל לשלוח אותה לאותה פונקציית Multiply בדיוק!
+    /**
+     * Inner class representing a conventional 2D array (array of arrays).
+     * Used as a baseline for cache inefficiency (indirection & pointer jumping).
      */
     static class Standard2DMatrix implements Matrix {
-        private double[][] data;
+        private final double[][] data;
 
         public Standard2DMatrix(double[][] data) {
             this.data = data;
         }
 
         @Override
-        public int getNumRows() { return data.length; }
+        public int getNumRows() {
+            return data.length;
+        }
 
         @Override
-        public int getNumCols() { return data[0].length; }
+        public int getNumCols() {
+            return data[0].length;
+        }
 
         @Override
-        public double get(int i, int j) { return data[i][j]; }
+        public double get(int i, int j) {
+            return data[i][j];
+        }
 
         @Override
-        public void set(int i, int j, double val) { data[i][j] = val; }
+        public void set(int i, int j, double val) {
+            data[i][j] = val;
+        }
 
         @Override
-        public boolean isSquare() { return getNumRows() == getNumCols(); }
+        public boolean isSquare() {
+            return getNumRows() == getNumCols();
+        }
 
         @Override
-        public Matrix transpose() { 
-            return null; // לא רלוונטי לבנצ'מרק הזה
+        public Matrix transpose() {
+            // Not required for this benchmark
+            return null;
         }
     }
 }
