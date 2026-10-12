@@ -127,18 +127,28 @@ public class PerformanceBenchmark {
 
         @Override
         public Matrix transpose() {
-            // Not required for this benchmark
-            return null;
-        }
-        @Override
-       public Matrix copy() {
-       double[][] newGrid = new double[this.rows][this.cols];
-        for (int i = 0; i < this.rows; i++) {
-           for (int j = 0; j < this.cols; j++) {
-                 newGrid[i][j] = this.grid[i][j];
+            int rows = getNumRows();
+            int cols = getNumCols();
+            double[][] transposed = new double[cols][rows];
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
+                    transposed[j][i] = data[i][j];
+                }
             }
-         }
-       return new Standard2DMatrix(newGrid);
-       }
+            return new Standard2DMatrix(transposed);
+        }
+
+        @Override
+        public Matrix copy() {
+            int rows = getNumRows();
+            int cols = getNumCols();
+            double[][] copyData = new double[rows][cols];
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
+                    copyData[i][j] = data[i][j];
+                }
+            }
+            return new Standard2DMatrix(copyData);
+        }
     }
 }
