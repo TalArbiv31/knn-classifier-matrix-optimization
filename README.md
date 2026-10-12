@@ -25,3 +25,37 @@ graph LR
     subgraph Sub2 [FlatMatrix - Cache Friendly]
         F1[Row 0, Row 1, Row 2] ===> M4[Contiguous Memory Block]
     end
+
+2. Machine Learning Pipeline (k-NN Classifier)
+Distance Computation: Computes vectorized squared distance matrices efficiently.
+
+Data Normalization: Implemented a built-in Z-score normalization mechanism to standardize multi-dimensional features (e.g., standardizing different scales like psychometric scores vs. physical distances) so no single feature dominates the model.
+
+Custom Sorting: Utilizes a custom IndexComparator and selection sorting to rapidly identify nearest neighbors and perform majority voting without losing track of the original data indices.
+
+graph TD
+    A[(mock_hr_data.csv)] -->|File I/O| B[Load Features and Labels]
+    B -->|Initialization| C[FlatMatrix]
+    C -->|MatrixOperations| D[Z-Score Normalization]
+    D -->|Linear Algebra| E[Calculate Squared Distances]
+    E -->|Custom Sorting| F[IndexComparator]
+    F -->|k=3| G[Majority Voting]
+    G --> H{Prediction Result}
+    H -->|High Risk| I[Recommend Secondary Placement]
+    H -->|Low Risk| J[Proceed to Regular Placement]
+
+Technologies & Principles
+Language: Java
+
+Core Concepts: Object-Oriented Programming (OOP), Custom Interfaces, Dynamic Array Mapping, Matrix Operations, Algorithm Efficiency, Cache Locality.
+
+Project Structure
+Matrix.java – Core matrix interface defining arithmetic and manipulation methods.
+
+FlatMatrix.java – High-performance 1D array-based matrix implementation.
+
+MatrixOperations.java – Linear algebra computations (addition, multiplication, squared distances, normalizations).
+
+IndexComparator.java – Custom comparator for sorting training instances by feature distances.
+
+MatrixUtils.java – Helper utility functions.
