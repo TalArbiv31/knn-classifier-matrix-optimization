@@ -25,7 +25,7 @@ graph LR
     subgraph Sub2 [FlatMatrix - Cache Friendly]
         F1[Row 0, Row 1, Row 2] ===> M4[Contiguous Memory Block]
     end
-
+```
 2. Machine Learning Pipeline (k-NN Classifier)
 Distance Computation: Computes vectorized squared distance matrices efficiently.
 
@@ -33,6 +33,7 @@ Data Normalization: Implemented a built-in Z-score normalization mechanism to st
 
 Custom Sorting: Utilizes a custom IndexComparator and selection sorting to rapidly identify nearest neighbors and perform majority voting without losing track of the original data indices.
 
+```mermaid
 graph TD
     A[(mock_hr_data.csv)] -->|File I/O| B[Load Features and Labels]
     B -->|Initialization| C[FlatMatrix]
@@ -43,6 +44,8 @@ graph TD
     G --> H{Prediction Result}
     H -->|High Risk| I[Recommend Secondary Placement]
     H -->|Low Risk| J[Proceed to Regular Placement]
+end
+```
 
 Technologies & Principles
 Language: Java
