@@ -1,3 +1,4 @@
+[![Java CI with Maven](https://github.com/TalArbiv31/knn-classifier-matrix-optimization/actions/workflows/ci.yml/badge.svg)](https://github.com/TalArbiv31/knn-classifier-matrix-optimization/actions/workflows/ci.yml)
 # Cache-Efficient k-NN Classifier (Inspired by HR Data Analytics)
 
 ## Overview
