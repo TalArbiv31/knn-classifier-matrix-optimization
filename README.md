@@ -44,7 +44,6 @@ graph TD
     G --> H{Prediction Result}
     H -->|High Risk| I[Recommend Secondary Placement]
     H -->|Low Risk| J[Proceed to Regular Placement]
-end
 ```
 
 Technologies & Principles
