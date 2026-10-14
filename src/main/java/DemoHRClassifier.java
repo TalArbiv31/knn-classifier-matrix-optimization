@@ -23,7 +23,7 @@ public class DemoHRClassifier {
                 // Skip the header row
                 if (isFirstLine) { 
                     isFirstLine = false; 
-                    continue; 
+                    continue; //skips to the next iteration.
                 }
                 
                 // Split the row by commas
@@ -71,7 +71,7 @@ public class DemoHRClassifier {
         
         if (predictions[0]) {
             System.out.println("HIGH RISK: The model predicts this recruit is likely to drop out.");
-            System.out.println("Action: Recommend secondary placement (מיון שניוני).");
+            System.out.println("Action: Recommend secondary placement.");
         } else {
             System.out.println("LOW RISK: The model predicts successful service completion.");
         }
