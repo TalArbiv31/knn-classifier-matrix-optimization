@@ -42,7 +42,7 @@ public class MatrixOperations {
         
         for (int j = 0; j < cols; j++) {
             double mu = mu(m, j);
-            double sigma = deviation(m, j);
+            double sigma = deviation(m, j, mu); // Optimized: pass mu directly
             
             if (sigma == 0) {
                 for (int i = 0; i < rows; i++) {
@@ -59,7 +59,7 @@ public class MatrixOperations {
         return ans;
     }
 
-/**
+    /**
      * Computes the squared Euclidean distance matrix for the given feature matrix.
      * Optimized to run in O(N^2 * D) time and O(N^2) space instead of O(N^3),
      * avoiding redundant intermediate matrix allocations and broadcasting multiplications.
@@ -93,6 +93,8 @@ public class MatrixOperations {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < rows; j++) {
                 double dist = diagValues[i] + diagValues[j] - 2 * FFT.get(i, j);
+                // Prevent negative zeroes due to floating point inaccuracies
+                if (dist < 0) dist = 0.0;
                 distMatrix.set(i, j, dist);
             }
         }
@@ -114,7 +116,7 @@ public class MatrixOperations {
         Matrix ans = new FlatMatrix(mat1.getNumRows(), mat2.getNumCols());
         for (int i = 0; i < mat1.getNumRows(); i++) {
             for (int k = 0; k < mat1.getNumCols(); k++) {
-                double temp = mat1.get(i, k); //Cached
+                double temp = mat1.get(i, k); // Cached for cache-locality
                 for (int j = 0; j < mat2.getNumCols(); j++) {
                     double currentSum = ans.get(i, j);
                     ans.set(i, j, currentSum + temp * mat2.get(k, j));
@@ -186,7 +188,7 @@ public class MatrixOperations {
      * Internal helper class to store a neighbor's index and its distance.
      */
     private static class Neighbor {
-        int index;       // Row index of the historical training instance (used to retrieve the label)
+        int index;       // Row index of the historical training instance
         double distance; // Distance from the test instance
 
         public Neighbor(int index, double distance) {
@@ -200,17 +202,25 @@ public class MatrixOperations {
      * using a Max-Heap (PriorityQueue) for optimal O(N log k) performance.
      */
     public static boolean[] testClasses(Matrix trainingFeatures, boolean[] trainingClasses, Matrix testFeatures, int k) {
+        // 1. Guard clauses (Security & Validation)
         if (trainingFeatures == null || trainingClasses == null || testFeatures == null) {
             throw new IllegalArgumentException("Parameters cannot be null");
         }
         if (trainingFeatures.getNumRows() == 0 || trainingFeatures.getNumCols() == 0 || 
             testFeatures.getNumRows() == 0 || testFeatures.getNumCols() == 0) {
-            throw new RuntimeException("Matrix dimensions cannot be 0");
+            throw new IllegalArgumentException("Matrix dimensions cannot be 0");
+        }
+        if (trainingFeatures.getNumRows() != trainingClasses.length) {
+            throw new IllegalArgumentException("Number of training features rows must match labels array length");
+        }
+        if (trainingFeatures.getNumCols() != testFeatures.getNumCols()) {
+            throw new IllegalArgumentException("Training and test features must have the same number of columns");
         }
         if (k < 1 || k > trainingFeatures.getNumRows()) {
             throw new IllegalArgumentException("k must be between 1 and the number of training instances");
         }
         
+        // 2. Normalization
         Matrix normalizedTrain = normalize(trainingFeatures);
         Matrix normalizedTest = normalizeUsingTrainStats(testFeatures, trainingFeatures);
         
@@ -218,7 +228,7 @@ public class MatrixOperations {
         int numTest = normalizedTest.getNumRows();
         int numCols = normalizedTrain.getNumCols();
         
-        // Optimize distance calculation: Combine Test and Train matrices once.
+        // 3. Optimize distance calculation: Combine Test and Train matrices once.
         Matrix combined = new FlatMatrix(numTest + numTrain, numCols);
         
         for (int row = 0; row < numTest; row++) {
@@ -232,14 +242,14 @@ public class MatrixOperations {
             }
         }
         
-        // Calculate the distance matrix (Rows 0 to numTest-1 are test instances, the rest are training instances)
+        // 4. Calculate the distance matrix (Rows 0 to numTest-1 are test instances, the rest are training instances)
         Matrix distMatrix = squareDistance(combined);
         boolean[] predictions = new boolean[numTest];
         
-        for (int i = 0; i < numTest; i++) { // Iterate over each test instance
+        // 5. Find k-Nearest Neighbors
+        for (int i = 0; i < numTest; i++) { 
             
-            // Create a Max-Heap. 
-            // We reverse the comparison order so the neighbor with the *largest* distance among the k is at the head of the queue.
+            // Max-Heap: The neighbor with the *largest* distance among the k is at the head
             PriorityQueue<Neighbor> maxHeap = new PriorityQueue<>(
                 (n1, n2) -> Double.compare(n2.distance, n1.distance)
             );
@@ -250,24 +260,22 @@ public class MatrixOperations {
                 // The distance is located at cell (i, trainRowInCombined) in the distance matrix
                 double dist = distMatrix.get(i, trainRowInCombined);
                 
-                maxHeap.offer(new Neighbor(m, dist));
-                
-                // If the heap size exceeds k, remove the neighbor with the largest distance
-                if (maxHeap.size() > k) {
+                // Optimized Heap Insertion: Avoid unnecessary object creation and O(log k) operations
+                if (maxHeap.size() < k) {
+                    maxHeap.offer(new Neighbor(m, dist));
+                } else if (dist < maxHeap.peek().distance) {
                     maxHeap.poll(); 
+                    maxHeap.offer(new Neighbor(m, dist));
                 }
             }
             
-            // The heap now contains exactly the k nearest neighbors. 
-            // Iterate through them to perform a majority vote.
+            // Majority vote logic
             int trueVotes = 0;
             for (Neighbor neighbor : maxHeap) {
                 if (trainingClasses[neighbor.index]) {
                     trueVotes++;
                 }
             }
-            
-            // Majority vote logic (valid for binary classification where k is odd)
             predictions[i] = (trueVotes > k / 2.0);
         }
         
@@ -291,9 +299,9 @@ public class MatrixOperations {
 
     /**
      * Computes the standard deviation (sigma) of a specific column in the given matrix.
+     * Takes pre-calculated mu to avoid redundant computations.
      */
-    private static double deviation(Matrix m, int col) {
-        double mu = mu(m, col);
+    private static double deviation(Matrix m, int col, double mu) {
         double sum = 0;
         for (int i = 0; i < m.getNumRows(); i++) {
             double diff = mu - m.get(i, col);
@@ -312,7 +320,7 @@ public class MatrixOperations {
         
         for (int j = 0; j < cols; j++) {
             double mu = mu(train, j);
-            double sigma = deviation(train, j);
+            double sigma = deviation(train, j, mu); // Optimized
             
             if (sigma == 0) {
                 for (int i = 0; i < rows; i++) {
@@ -325,6 +333,9 @@ public class MatrixOperations {
                 }
             }
         }
+        
+        // Maintained consistency with training data rounding
+        MatrixUtils.roundMatrix(ans);
         return ans;
     }
 }
