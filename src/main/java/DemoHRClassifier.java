@@ -25,10 +25,9 @@ public class DemoHRClassifier {
         int k = 5;
         System.out.println("[*] Running k-NN pipeline (k=" + k + ")...");
         boolean[] predictions = MatrixOperations.testClasses(X_train, y_train, X_test, k);
-
-        // 4. Evaluate the model performance using measureAccuracy
+        // 4. Evaluate the model performance
         System.out.println("[*] Evaluating model performance...");
-        double accuracy = MatrixOperations.measureAccuracy(predictions, y_test_actual);
+        double accuracy = ModelEvaluator.measureAccuracy(predictions, y_test_actual);
 
         System.out.println("\n--- Evaluation Results ---");
         System.out.printf("Model Accuracy on completely unseen data: %.2f%%\n", (accuracy * 100));
