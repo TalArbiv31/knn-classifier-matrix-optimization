@@ -65,7 +65,7 @@ The system is optimized to eliminate bottlenecks in both the linear algebra and 
   * Cache Locality & Hardware-Aware Design
   * Dynamic 1D-to-2D Index Mapping
   * Matrix Operations & Linear Algebra
-  * Priority Queues (Max-Heap) & Lambda Expressions
+  * Priority Queues (Max-Heap)
   * Object-Oriented Design (Clean Interfaces & Polymorphism)
 
 ---
