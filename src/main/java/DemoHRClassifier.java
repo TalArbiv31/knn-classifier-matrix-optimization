@@ -8,72 +8,79 @@ public class DemoHRClassifier {
 
     public static void main(String[] args) {
         System.out.println("--- IDF HR Data Analytics: k-NN Dropout Predictor ---");
-        System.out.println("[*] Reading historical data from mock_hr_data.csv...");
 
+        // 1. טעינת נתוני ההיסטוריה (Train)
+        System.out.println("[*] Loading historical training data...");
+        DataContainer trainData = loadDataFromCsv("hr_train_data.csv");
+        Matrix X_train = new FlatMatrix(trainData.features);
+        boolean[] y_train = trainData.labels;
+
+        // 2. טעינת נתוני המבחן / גיוס חדש (Test)
+        System.out.println("[*] Loading new recruits test data...");
+        DataContainer testData = loadDataFromCsv("hr_test_data.csv");
+        Matrix X_test = new FlatMatrix(testData.features);
+        boolean[] y_test_actual = testData.labels; // זו ה"אמת בשטח" שנסתיר מהאלגוריתם
+
+        // 3. הרצת האלגוריתם
+        int k = 5;
+        System.out.println("[*] Running k-NN pipeline (k=" + k + ")...");
+        boolean[] predictions = MatrixOperations.testClasses(X_train, y_train, X_test, k);
+
+        // 4. מדידת הצלחה עם הפונקציה measureAccuracy!
+        System.out.println("[*] Evaluating model performance...");
+        double accuracy = MatrixOperations.measureAccuracy(predictions, y_test_actual);
+
+        System.out.println("\n--- Evaluation Results ---");
+        System.out.printf("Model Accuracy on completely unseen data: %.2f%%\n", (accuracy * 100));
+    }
+
+    /**
+     * פונקציית עזר לקריאת קובץ CSV והמרתו למערכי נתונים
+     */
+    private static DataContainer loadDataFromCsv(String filePath) {
         List<double[]> featuresList = new ArrayList<>();
         List<Boolean> labelsList = new ArrayList<>();
 
-        // 1. Read the CSV file dynamically
-        // Make sure the file "mock_hr_data.csv" is in your project root directory
-        try (BufferedReader br = new BufferedReader(new FileReader("mock_hr_data.csv"))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
             boolean isFirstLine = true;
             
             while ((line = br.readLine()) != null) {
-                // Skip the header row
-                if (isFirstLine) { 
-                    isFirstLine = false; 
-                    continue; //skips to the next iteration.
-                }
+                if (isFirstLine) { isFirstLine = false; continue; } // דילוג על הכותרות
                 
-                // Split the row by commas
                 String[] values = line.split(",");
-                
-                // Parse the Strings into numbers
                 double dapar = Double.parseDouble(values[0]);
                 double profile = Double.parseDouble(values[1]);
                 double distance = Double.parseDouble(values[2]);
-                boolean droppedOut = values[3].equals("1"); // true if "1", false if "0"
+                boolean droppedOut = values[3].equals("1");
                 
                 featuresList.add(new double[]{dapar, profile, distance});
                 labelsList.add(droppedOut);
             }
         } catch (IOException e) {
-            System.err.println("Error reading the CSV file. Make sure it exists in the correct folder.");
+            System.err.println("Error reading " + filePath);
             e.printStackTrace();
-            return;
         }
 
-        // 2. Convert dynamic Lists to static arrays for our Matrix Operations
-        double[][] trainingFeatures = featuresList.toArray(new double[0][]);
-        boolean[] trainingClasses = new boolean[labelsList.size()];
+        double[][] features = featuresList.toArray(new double[0][]);
+        boolean[] labels = new boolean[labelsList.size()];
         for (int i = 0; i < labelsList.size(); i++) {
-            trainingClasses[i] = labelsList.get(i);
+            labels[i] = labelsList.get(i);
         }
 
-        System.out.println("[*] Successfully loaded " + trainingFeatures.length + " historical records.");
-        System.out.println("[*] Loading data into FlatMatrix for cache efficiency...");
-        Matrix X_train = new FlatMatrix(trainingFeatures);
+        return new DataContainer(features, labels);
+    }
 
-        // 3. Define a new recruit (The instance we want to predict)
-        // Recruit with Dapar 45, Profile 64, and lives 180km away
-        double[][] recruitData = {{45, 64, 180}};
-        Matrix X_recruit = new FlatMatrix(recruitData);
+    /**
+     * מחלקת עזר פנימית לאריזת הנתונים שחוזרים מפונקציית הקריאה
+     */
+    private static class DataContainer {
+        double[][] features;
+        boolean[] labels;
 
-        // 4. Execute the Machine Learning Pipeline
-        int k = 3;
-        System.out.println("[*] Running k-NN pipeline (Normalization, Distance Calculation, Sorting)...");
-        boolean[] predictions = MatrixOperations.testClasses(X_train, trainingClasses, X_recruit, k);
-
-        // 5. Output the business result
-        System.out.println("\n--- Prediction Result ---");
-        System.out.println("Based on the " + k + " most mathematically similar historical recruits:");
-        
-        if (predictions[0]) {
-            System.out.println("HIGH RISK: The model predicts this recruit is likely to drop out.");
-            System.out.println("Action: Recommend secondary placement.");
-        } else {
-            System.out.println("LOW RISK: The model predicts successful service completion.");
+        DataContainer(double[][] features, boolean[] labels) {
+            this.features = features;
+            this.labels = labels;
         }
     }
 }
