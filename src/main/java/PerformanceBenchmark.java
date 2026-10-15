@@ -58,6 +58,9 @@ public class PerformanceBenchmark {
         Matrix warmUpMat1 = createFlatMatrix(new double[60][60]);
         Matrix warmUpMat2 = createFlatMatrix(new double[60][60]);
         MatrixOperations.multiply(warmUpMat1, warmUpMat2);
+        Matrix warmUpMat3 =  new Standard2DMatrix(new double[60][60]);
+        Matrix warmUpMat4 =  new Standard2DMatrix(new double[60][60]);
+        MatrixOperations.multiply(warmUpMat3, warmUpMat4);
     }
 
     /**
