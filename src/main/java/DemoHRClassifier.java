@@ -11,13 +11,13 @@ public class DemoHRClassifier {
 
         // 1. Load historical training data
         System.out.println("[*] Loading historical training data...");
-        DataContainer trainData = loadDataFromCsv("hr_train_data.csv");
+        DataContainer trainData = loadDataFromCsv("resources/hr_train_data.csv");
         Matrix X_train = new FlatMatrix(trainData.features);
         boolean[] y_train = trainData.labels;
 
         // 2. Load test data (new recruits / completely unseen data)
         System.out.println("[*] Loading new recruits test data...");
-        DataContainer testData = loadDataFromCsv("hr_test_data.csv");
+        DataContainer testData = loadDataFromCsv("resources/hr_test_data.csv");
         Matrix X_test = new FlatMatrix(testData.features);
         boolean[] y_test_actual = testData.labels; // Ground truth, hidden from the algorithm
 
