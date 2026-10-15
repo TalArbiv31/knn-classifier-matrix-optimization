@@ -40,12 +40,12 @@ graph LR
 
 ```mermaid
 graph TD
-    A[(mock_hr_data.csv)] -->|File I/O| B[Load Features and Labels]
+    A[(hr_train_data.csv / hr_test_data.csv)] -->|File I/O| B[Load Features and Labels]
     B -->|Initialization| C[FlatMatrix]
     C -->|MatrixOperations| D[Z-Score Normalization]
     D -->|Linear Algebra| E[Calculate Squared Distances]
-    E -->|Custom Sorting| F[IndexComparator]
-    F -->|k=3| G[Majority Voting]
+    E -->|PriorityQueue| F[Max-Heap k-NN Search]
+    F -->|k=5| G[Majority Voting]
     G --> H{Prediction Result}
     H -->|High Risk| I[Recommend Secondary Placement]
     H -->|Low Risk| J[Proceed to Regular Placement]
@@ -65,7 +65,7 @@ The system is optimized to eliminate bottlenecks in both the linear algebra and 
   * Cache Locality & Hardware-Aware Design
   * Dynamic 1D-to-2D Index Mapping
   * Matrix Operations & Linear Algebra
-  * Custom Sorting & Comparators
+  * Priority Queues (Max-Heap) & Lambda Expressions
   * Object-Oriented Design (Clean Interfaces & Polymorphism)
 
 ---
@@ -73,11 +73,23 @@ The system is optimized to eliminate bottlenecks in both the linear algebra and 
 ## Project Structure
 
 ```text
-├── Matrix.java              # Core matrix interface defining arithmetic and manipulation methods
-├── FlatMatrix.java          # High-performance 1D array-based matrix implementation
-├── MatrixOperations.java    # Linear algebra computations (Z-score normalization, squared distances)
-├── IndexComparator.java     # Custom comparator for sorting instances by distance indices
-├── DemoHRClassifier.java    # End-to-end classification demo using simulated HR data
-└── PerformanceBenchmark.java # CPU cache locality benchmark for matrix multiplication
-
+├── src/
+│   ├── DemoHRClassifier.java    # End-to-end ML pipeline orchestration
+│   ├── FlatMatrix.java          # High-performance 1D array-based matrix implementation
+│   ├── Matrix.java              # Core matrix interface
+│   ├── MatrixOperations.java    # Linear algebra (normalization, vectorized distances)
+│   ├── ModelEvaluator.java      # Statistical metrics and accuracy evaluation
+│   └── PerformanceBenchmark.java # CPU cache locality benchmark vs 2D arrays
+└── resources/
+    ├── hr_train_data.csv        # Historical military placement data
+    └── hr_test_data.csv         # New recruits data for inference
 ```
+
+## Quick Start / How to Run
+To execute the complete k-NN machine learning pipeline:
+1. Clone the repository.
+2. Ensure you have **Java 11+** installed.
+3. Run the `DemoHRClassifier` main class. It will automatically load the training and testing CSV datasets from the `resources` directory, execute the model, and print the accuracy metrics to the console.
+
+To run the cache-locality benchmark:
+* Execute the `PerformanceBenchmark` class to see the live execution time differences between `FlatMatrix` and standard 2D arrays on your specific CPU architecture.
