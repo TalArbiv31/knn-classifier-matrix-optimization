@@ -1,4 +1,3 @@
-import java.util.PriorityQueue;
 import java.util.Comparator;
 
 /**
@@ -60,7 +59,7 @@ public class MatrixOperations {
         return ans;
     }
 
-/**
+    /**
      * Computes the squared Euclidean distance matrix for the given feature matrix.
      * Optimized to run in O(N^2 * D) time and O(N^2) space instead of O(N^3),
      * avoiding redundant intermediate matrix allocations and broadcasting multiplications.
@@ -210,21 +209,8 @@ public class MatrixOperations {
     }
 
     /**
-     * Internal helper class to store a neighbor's index and its distance.
-     */
-    private static class Neighbor {
-        int index;       // Row index of the historical training instance (used to retrieve the label)
-        double distance; // Distance from the test instance
-
-        public Neighbor(int index, double distance) {
-            this.index = index;
-            this.distance = distance;
-        }
-    }
-    
-    /**
      * Executes the k-NN classification algorithm to predict labels for the test features 
-     * using a Max-Heap (PriorityQueue) for optimal O(N log k) performance.
+     * using the selectionSort approach on distance indices.
      */
     public static boolean[] testClasses(Matrix trainingFeatures, boolean[] trainingClasses, Matrix testFeatures, int k) {
         if (trainingFeatures == null || trainingClasses == null || testFeatures == null) {
@@ -259,42 +245,39 @@ public class MatrixOperations {
             }
         }
         
-        // Calculate the distance matrix (Rows 0 to numTest-1 are test instances, the rest are training instances)
+        // Calculate the distance matrix
         Matrix distMatrix = squareDistance(combined);
         boolean[] predictions = new boolean[numTest];
         
-        for (int i = 0; i < numTest; i++) { // Iterate over each test instance
+        for (int i = 0; i < numTest; i++) { 
             
-            // Create a Max-Heap. 
-            // We reverse the comparison order so the neighbor with the *largest* distance among the k is at the head of the queue.
-            PriorityQueue<Neighbor> maxHeap = new PriorityQueue<>(
-                (n1, n2) -> Double.compare(n2.distance, n1.distance)
-            );
-            
-            // Scan all historical training instances (finding the k nearest in O(N log k) time)
+            // 1. Create an array representing the serial numbers (indices) of the historical training data
+            int[] trainIndices = new int[numTrain];
             for (int m = 0; m < numTrain; m++) {
-                int trainRowInCombined = numTest + m;
-                // The distance is located at cell (i, trainRowInCombined) in the distance matrix
-                double dist = distMatrix.get(i, trainRowInCombined);
-                
-                maxHeap.offer(new Neighbor(m, dist));
-                
-                // If the heap size exceeds k, remove the neighbor with the largest distance
-                if (maxHeap.size() > k) {
-                    maxHeap.poll(); 
-                }
+                trainIndices[m] = m;
             }
             
-            // The heap now contains exactly the k nearest neighbors. 
-            // Iterate through them to perform a majority vote.
+            // 2. Define the Comparator. It determines proximity by looking up distances in distMatrix.
+            final int currentTestInstance = i; // Needed to reference the current row inside the lambda
+            Comparator<Integer> distComparator = (index1, index2) -> {
+                double dist1 = distMatrix.get(currentTestInstance, numTest + index1);
+                double dist2 = distMatrix.get(currentTestInstance, numTest + index2);
+                return Double.compare(dist1, dist2);
+            };
+            
+            // 3. Sort the indices based on the distances (O(N^2) sorting process)
+            int[] sortedIndices = selectionSort(trainIndices, distComparator);
+            
+            // 4. Extract the top k closest neighbors and perform a majority vote
             int trueVotes = 0;
-            for (Neighbor neighbor : maxHeap) {
-                if (trainingClasses[neighbor.index]) {
+            for (int j = 0; j < k; j++) {
+                // sortedIndices[j] gives us the original ID of the closest neighbor
+                if (trainingClasses[sortedIndices[j]]) {
                     trueVotes++;
                 }
             }
             
-            // Majority vote logic (valid for binary classification where k is odd)
+            // 5. Majority vote logic
             predictions[i] = (trueVotes > k / 2.0);
         }
         
