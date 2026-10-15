@@ -60,8 +60,13 @@ public class MatrixOperations {
         return ans;
     }
 
-    /**
+/**
      * Computes the squared Euclidean distance matrix for the given feature matrix.
+     * Optimized to run in O(N^2 * D) time and O(N^2) space instead of O(N^3),
+     * avoiding redundant intermediate matrix allocations and broadcasting multiplications.
+     *
+     * @param m The feature matrix (N x D)
+     * @return A square distance matrix (N x N) where cell (i, j) contains ||x_i - x_j||^2
      */
     public static Matrix squareDistance(Matrix m) {
         if (m == null) {
@@ -69,22 +74,31 @@ public class MatrixOperations {
         }
         
         int rows = m.getNumRows();
-        Matrix ones = new FlatMatrix(rows, rows);
+        
+        // 1. Compute dot products between all row pairs (X * Y^T)
+        // m is (N x D) and its transpose is (D x N); multiplication takes O(N^2 * D)
+        Matrix FT = m.transpose();
+        Matrix FFT = multiply(m, FT);
+        
+        // 2. Extract squared norms for each instance (||x_i||^2)
+        // These values lie along the diagonal of FFT. Storing them in a 1D array takes O(N)
+        double[] diagValues = new double[rows];
+        for (int i = 0; i < rows; i++) {
+            diagValues[i] = FFT.get(i, i);
+        }
+        
+        // 3. Construct the pairwise squared distance matrix directly
+        // Eliminates intermediate matrix allocations (ones, firstTerm, secondTerm, etc.)
+        // Evaluates the algebraic identity: ||x - y||^2 = ||x||^2 + ||y||^2 - 2<x, y> in O(N^2)
+        Matrix distMatrix = new FlatMatrix(rows, rows);
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < rows; j++) {
-                ones.set(i, j, 1.0);
+                double dist = diagValues[i] + diagValues[j] - 2 * FFT.get(i, j);
+                distMatrix.set(i, j, dist);
             }
         }
         
-        Matrix FT = m.transpose();
-        Matrix FFT = multiply(m, FT);
-        Matrix diagFFT = diagonal(FFT);
-        
-        Matrix firstTerm = multiply(ones, diagFFT);
-        Matrix secondTerm = multiply(diagFFT, ones);
-        Matrix thirdTerm = add(FFT, FFT);
-        
-        return sub(add(firstTerm, secondTerm), thirdTerm);
+        return distMatrix;
     }
 
     /**
