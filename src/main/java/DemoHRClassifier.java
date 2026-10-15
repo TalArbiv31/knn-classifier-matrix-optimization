@@ -19,7 +19,7 @@ public class DemoHRClassifier {
             // 2. Load test data (new recruits / completely unseen data)
             System.out.println("[*] Loading new recruits test data...");
             double[][] testFeatures = MatrixUtils.readFeaturesFromCSV(testFilePath);
-            boolean[] y_test_actual = MatrixUtils.readLabelsFromCSV(testFilePath); // Ground truth
+            boolean[] y_test_actual = MatrixUtils.readLabelsFromCSV(testFilePath);
             Matrix X_test = new FlatMatrix(testFeatures);
 
             // 3. Execute the Machine Learning Pipeline
