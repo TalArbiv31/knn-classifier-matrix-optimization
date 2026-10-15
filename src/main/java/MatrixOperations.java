@@ -1,5 +1,4 @@
 import java.util.PriorityQueue;
-import java.util.Comparator;
 
 /**
  * Provides static utility methods for matrix operations and k-NN classification computations.
@@ -179,32 +178,6 @@ public class MatrixOperations {
             for (int j = 0; j < m1.getNumCols(); j++) {
                 ans.set(i, j, m1.get(i, j) - m2.get(i, j));
             }
-        }
-        return ans;
-    }
-
-    /**
-     * Performs a selection sort on an array of indices based on a custom comparator.
-     */
-    public static int[] selectionSort(int[] indices, Comparator<Integer> comp) {
-        if (indices == null || comp == null) {
-            throw new IllegalArgumentException("Parameters cannot be null");
-        }
-        
-        int n = indices.length;
-        int[] ans = new int[n];
-        System.arraycopy(indices, 0, ans, 0, n);
-        
-        for (int i = 0; i < n - 1; i++) {
-            int minIndex = i;
-            for (int j = i + 1; j < n; j++) {
-                if (comp.compare(ans[j], ans[minIndex]) < 0) {
-                    minIndex = j;
-                }
-            }
-            int temp = ans[i];
-            ans[i] = ans[minIndex];
-            ans[minIndex] = temp;
         }
         return ans;
     }
