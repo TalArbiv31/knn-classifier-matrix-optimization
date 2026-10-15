@@ -287,24 +287,6 @@ public class MatrixOperations {
         return predictions;
     }
 
-    /**
-     * Calculates the accuracy of the predictions against the ground truth labels.
-     */
-    public static double measureAccuracy(boolean[] testLabels, boolean[] trueLabels) {
-        if (testLabels == null || trueLabels == null || testLabels.length == 0 || testLabels.length != trueLabels.length) {
-            return 0;
-        }
-        
-        int correct = 0;
-        int totalObjects = testLabels.length;
-        for (int i = 0; i < totalObjects; i++) {
-            if (testLabels[i] == trueLabels[i]) {
-                correct++;
-            }
-        }
-        return (double) correct / totalObjects;
-    }
-
     // =========================================================================
     // Helper Functions
     // =========================================================================
