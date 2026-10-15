@@ -52,10 +52,15 @@ graph TD
 ```
 
 ### 3. Algorithmic Complexity (Big-O)
-The system is optimized to eliminate bottlenecks in both the linear algebra and the machine learning operations:
-* **Distance Matrix Computation:** $O(N^2 \cdot d)$ time complexity. Avoids naive 3D nested loops by evaluating the algebraic expansion $\Vert{}x - y\Vert{}^2 = \Vert{}x\Vert{}^2 + \Vert{}y\Vert{}^2 - 2\langle x, y \rangle$ using fast matrix multiplication.
-* **Space Complexity:** $O(N^2)$ memory footprint. Extracted diagonal broadcasting into 1D arrays to prevent $O(N^3)$ allocations of redundant NxN intermediate matrices.
-* **k-NN Inference:** $O(N_{test} \cdot N_{train} \cdot \log k)$ runtime. Bypasses full data sorting by utilizing a Max-Heap size-capped at `k`, maintaining optimal theoretical bounds for large datasets.
+
+**Time Complexity:**
+* **Total End-to-End Runtime:** $\mathcal{O}(N^2 \cdot D + N_{test} \cdot N_{train} \cdot \log k)$
+* **Distance Matrix Computation:** $\mathcal{O}(N^2 \cdot D)$. Avoids naive 3D nested loops by evaluating the algebraic expansion $\Vert{}x - y\Vert{}^2 = \Vert{}x\Vert{}^2 + \Vert{}y\Vert{}^2 - 2\langle x, y \rangle$ using fast matrix multiplication.
+* **k-NN Inference:** $\mathcal{O}(N_{test} \cdot N_{train} \cdot \log k)$. Bypasses full data sorting by utilizing a Max-Heap size-capped at `k`, maintaining optimal theoretical bounds for large datasets.
+
+**Space Complexity:**
+* **Total Memory Footprint:** $\mathcal{O}(N^2)$
+* **Optimization:** Extracted diagonal broadcasting into 1D arrays to prevent $\mathcal{O}(N^3)$ allocations of redundant NxN intermediate matrices, ensuring stable execution without overloading the Garbage Collector.
 ---
 
 ## Technologies & Principles
