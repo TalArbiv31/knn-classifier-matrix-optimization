@@ -36,7 +36,7 @@ graph LR
 ### 2. Machine Learning Pipeline (k-NN Classifier)
 * **Vectorized Distance Computation:** Computes squared distance matrices efficiently across sample batches.
 * **Data Normalization:** Features a built-in Z-score normalization mechanism to standardize multi-dimensional features (e.g., psychometric scores vs. physical distances) so no single scale dominates the model.
-* **Optimized Neighbor Selection:** Utilizes a custom `IndexComparator` and sorting routines to rapidly identify nearest neighbors and perform majority voting without losing track of original sample indices.
+* **Optimized Neighbor Selection:** Replaced naive array sorting $O(N^2)$ with a Max-Heap (PriorityQueue) structure. This reduces the neighbor search complexity to $O(N \log k)$ per query, rapidly identifying the nearest neighbors for majority voting without losing track of original sample indices.
 
 ```mermaid
 graph TD
@@ -51,6 +51,11 @@ graph TD
     H -->|Low Risk| J[Proceed to Regular Placement]
 ```
 
+### 3. Algorithmic Complexity (Big-O)
+The system is optimized to eliminate bottlenecks in both the linear algebra and the machine learning operations:
+* **Distance Matrix Computation:** $O(N^2 \cdot d)$ time complexity. Avoids naive 3D nested loops by evaluating the algebraic expansion $\Vert{}x - y\Vert{}^2 = \Vert{}x\Vert{}^2 + \Vert{}y\Vert{}^2 - 2\langle x, y \rangle$ using fast matrix multiplication.
+* **Space Complexity:** $O(N^2)$ memory footprint. Extracted diagonal broadcasting into 1D arrays to prevent $O(N^3)$ allocations of redundant NxN intermediate matrices.
+* **k-NN Inference:** $O(N_{test} \cdot N_{train} \cdot \log k)$ runtime. Bypasses full data sorting by utilizing a Max-Heap size-capped at `k`, maintaining optimal theoretical bounds for large datasets.
 ---
 
 ## Technologies & Principles
