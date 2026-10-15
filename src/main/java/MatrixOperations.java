@@ -100,12 +100,12 @@ public class MatrixOperations {
         
         Matrix ans = new FlatMatrix(mat1.getNumRows(), mat2.getNumCols());
         for (int i = 0; i < mat1.getNumRows(); i++) {
-            for (int j = 0; j < mat2.getNumCols(); j++) {
-                double sum = 0;
-                for (int k = 0; k < mat1.getNumCols(); k++) {
-                    sum += mat1.get(i, k) * mat2.get(k, j);
+            for (int k = 0; k < mat1.getNumCols(); k++) {
+                double temp = mat1.get(i, k); //Cached
+                for (int j = 0; j < mat2.getNumCols(); j++) {
+                    double currentSum = ans.get(i, j);
+                    ans.set(i, j, currentSum + temp * mat2.get(k, j));
                 }
-                ans.set(i, j, sum);
             }
         }
         return ans;
