@@ -9,24 +9,24 @@ public class DemoHRClassifier {
     public static void main(String[] args) {
         System.out.println("--- IDF HR Data Analytics: k-NN Dropout Predictor ---");
 
-        // 1. טעינת נתוני ההיסטוריה (Train)
+        // 1. Load historical training data
         System.out.println("[*] Loading historical training data...");
         DataContainer trainData = loadDataFromCsv("hr_train_data.csv");
         Matrix X_train = new FlatMatrix(trainData.features);
         boolean[] y_train = trainData.labels;
 
-        // 2. טעינת נתוני המבחן / גיוס חדש (Test)
+        // 2. Load test data (new recruits / completely unseen data)
         System.out.println("[*] Loading new recruits test data...");
         DataContainer testData = loadDataFromCsv("hr_test_data.csv");
         Matrix X_test = new FlatMatrix(testData.features);
-        boolean[] y_test_actual = testData.labels; // זו ה"אמת בשטח" שנסתיר מהאלגוריתם
+        boolean[] y_test_actual = testData.labels; // Ground truth, hidden from the algorithm
 
-        // 3. הרצת האלגוריתם
+        // 3. Execute the Machine Learning Pipeline
         int k = 5;
         System.out.println("[*] Running k-NN pipeline (k=" + k + ")...");
         boolean[] predictions = MatrixOperations.testClasses(X_train, y_train, X_test, k);
 
-        // 4. מדידת הצלחה עם הפונקציה measureAccuracy!
+        // 4. Evaluate the model performance using measureAccuracy
         System.out.println("[*] Evaluating model performance...");
         double accuracy = MatrixOperations.measureAccuracy(predictions, y_test_actual);
 
@@ -35,7 +35,7 @@ public class DemoHRClassifier {
     }
 
     /**
-     * פונקציית עזר לקריאת קובץ CSV והמרתו למערכי נתונים
+     * Helper method to read a CSV file and convert it into data arrays.
      */
     private static DataContainer loadDataFromCsv(String filePath) {
         List<double[]> featuresList = new ArrayList<>();
@@ -46,7 +46,10 @@ public class DemoHRClassifier {
             boolean isFirstLine = true;
             
             while ((line = br.readLine()) != null) {
-                if (isFirstLine) { isFirstLine = false; continue; } // דילוג על הכותרות
+                if (isFirstLine) { 
+                    isFirstLine = false; 
+                    continue; 
+                } // Skip header row
                 
                 String[] values = line.split(",");
                 double dapar = Double.parseDouble(values[0]);
@@ -72,7 +75,7 @@ public class DemoHRClassifier {
     }
 
     /**
-     * מחלקת עזר פנימית לאריזת הנתונים שחוזרים מפונקציית הקריאה
+     * Internal helper class (Data Transfer Object) to package the parsed data arrays.
      */
     private static class DataContainer {
         double[][] features;
