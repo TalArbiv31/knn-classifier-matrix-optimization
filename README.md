@@ -1,8 +1,8 @@
 [![Java CI with Maven](https://github.com/TalArbiv31/knn-classifier-matrix-optimization/actions/workflows/ci.yml/badge.svg)](https://github.com/TalArbiv31/knn-classifier-matrix-optimization/actions/workflows/ci.yml)
-# Cache-Efficient k-NN Classifier (Inspired by HR Data Analytics)
+# Cache-Efficient k-NN Classifier (Inspired by IDF Data Analytics)
 
 ## Overview
-During my service as an HR Data Analyst in the IDF, I managed and analyzed hundreds of thousands of personnel records. While SQL and BI tools are excellent for business logic, I realized that Machine Learning algorithms could uncover hidden patterns in placement success rates and dropout risks that standard queries miss.
+During my service as an Data Analyst in the IDF, I managed and analyzed hundreds of thousands of personnel records. While SQL and BI tools are excellent for business logic, I realized that Machine Learning algorithms could uncover hidden patterns in placement success rates and dropout risks that standard queries miss.
 
 Inspired by this domain, I built this Java implementation of a **k-Nearest Neighbors (k-NN) classification pipeline from scratch**, coupling it with a highly optimized, cache-efficient memory representation designed to handle large-scale datasets rapidly.
 
