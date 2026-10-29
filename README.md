@@ -4,39 +4,39 @@
 ## Overview
 During my service as an Data Analyst in the IDF, I managed and analyzed hundreds of thousands of personnel records. While SQL and BI tools are excellent for business logic, I realized that Machine Learning algorithms could uncover hidden patterns in placement success rates and dropout risks that standard queries miss.
 
-Inspired by this domain, I built this Java implementation of a **k-Nearest Neighbors (k-NN) classification pipeline from scratch**, coupling it with a highly optimized, cache-efficient memory representation designed to handle large-scale datasets rapidly.
+Inspired by this domain, I built this Java implementation of a **k-Nearest Neighbors (k-NN) classification pipeline from scratch**, coupling it with an optimized memory representation designed to handle large-scale datasets.
 
-This project bridges practical data analysis experience with core computer science algorithmic design, focusing heavily on runtime efficiency, memory optimization, and hardware-aware programming.
+This project bridges practical data analysis experience with core computer science algorithmic design, focusing on runtime efficiency, memory footprint, and hardware-aware programming concepts.
 
 ---
 
 ## Core Features & Optimizations
 
 ### 1. Performance & Memory Optimization (`FlatMatrix`)
-When processing massive datasets, standard 2D arrays suffer from cache misses due to fragmented pointer-based memory allocation. 
+When processing datasets, standard 2D arrays (`double[][]` in Java) suffer from cache misses and Garbage Collector overhead due to fragmented, pointer-based memory allocation (arrays of arrays).
 
-* **Contiguous Memory Buffers:** Re-implemented standard 2D arrays as contiguous 1D memory buffers in row-major order.
-* **Spatial Locality:** Significantly enhances CPU cache utilization, reducing memory access overhead for intensive linear algebra operations and distance calculations.
+- **Contiguous Memory Buffers:** Re-implemented standard 2D arrays as contiguous 1D memory buffers in row-major order.
+- **Hardware-Awareness & JIT Dynamics:** Designed to enhance CPU spatial cache utilization. 
 
-> ** Benchmark Result:** Running a matrix multiplication test ($800 \times 800$ elements) proves that the contiguous `FlatMatrix` implementation is **~2.5x faster** than standard Java 2D arrays (`double[][]`) purely due to CPU spatial cache locality. *(See `PerformanceBenchmark.java`)*
+> **Benchmark Results (JIT-Aware):** A dedicated performance benchmark testing matrix multiplication ($1000 \times 1000$ elements) with proper JVM Warm-up phases demonstrates a **consistent 5%-10% speedup** over standard 2D arrays under heavy computational loads. This showcases the mitigation of pointer-chasing overhead and reduced memory fragmentation, even against modern JVM escape analysis and aggressive Garbage Collection optimizations. *(See `PerformanceBenchmark.java`)*
 
 ```mermaid
 graph LR
-    subgraph Sub1 [Standard 2D Array - Cache Misses]
+    subgraph Sub1 [Standard 2D Array - Fragmented Memory]
         R0[Row 0] -.-> M1[Memory Addr 100]
         R1[Row 1] -.-> M2[Memory Addr 500]
         R2[Row 2] -.-> M3[Memory Addr 250]
     end
 
-    subgraph Sub2 [FlatMatrix - Cache Friendly]
+    subgraph Sub2 [FlatMatrix - Contiguous Layout]
         F1[Row 0, Row 1, Row 2] ===> M4[Contiguous Memory Block]
     end
 ```
 
 ### 2. Machine Learning Pipeline (k-NN Classifier)
-* **Vectorized Distance Computation:** Computes squared distance matrices efficiently across sample batches.
-* **Data Normalization:** Features a built-in Z-score normalization mechanism to standardize multi-dimensional features (e.g., psychometric scores vs. physical distances) so no single scale dominates the model.
-* **Optimized Neighbor Selection:** Replaced naive array sorting $O(N^2)$ with a Max-Heap (PriorityQueue) structure. This reduces the neighbor search complexity to $O(N \log k)$ per query, rapidly identifying the nearest neighbors for majority voting without losing track of original sample indices.
+- **Vectorized Distance Computation:** Computes squared distance matrices efficiently across sample batches.
+- **Data Normalization:** Features a built-in Z-score normalization mechanism to standardize multi-dimensional features (e.g., psychometric scores vs. physical distances) so no single scale dominates the model.
+- **Optimized Neighbor Selection:** Replaced naive array sorting $O(N^2)$ with a Max-Heap (PriorityQueue) structure. This reduces the neighbor search complexity to $O(N \log k)$ per query, rapidly identifying the nearest neighbors for majority voting without losing track of original sample indices.
 
 ```mermaid
 graph TD
@@ -54,47 +54,44 @@ graph TD
 ### 3. Algorithmic Complexity (Big-O)
 
 **Time Complexity:**
-* **Total End-to-End Runtime:** $\mathcal{O}(N^2 \cdot D + N_{test} \cdot N_{train} \cdot \log k)$
-* **Distance Matrix Computation:** $\mathcal{O}(N^2 \cdot D)$. Avoids naive 3D nested loops by evaluating the algebraic expansion $\Vert{}x - y\Vert{}^2 = \Vert{}x\Vert{}^2 + \Vert{}y\Vert{}^2 - 2\langle x, y \rangle$ using fast matrix multiplication.
-* **k-NN Inference:** $\mathcal{O}(N_{test} \cdot N_{train} \cdot \log k)$. Bypasses full data sorting by utilizing a Max-Heap size-capped at `k`, maintaining optimal theoretical bounds for large datasets.
+- **Total End-to-End Runtime:** $\mathcal{O}(N^2 \cdot D + N_{test} \cdot N_{train} \cdot \log k)$
+- **Distance Matrix Computation:** $\mathcal{O}(N^2 \cdot D)$. Avoids naive 3D nested loops by evaluating the algebraic expansion $\Vert{}x - y\Vert{}^2 = \Vert{}x\Vert{}^2 + \Vert{}y\Vert{}^2 - 2\langle x, y \rangle$ using fast matrix multiplication.
+- **k-NN Inference:** $\mathcal{O}(N_{test} \cdot N_{train} \cdot \log k)$. Bypasses full data sorting by utilizing a Max-Heap size-capped at `k`, maintaining optimal theoretical bounds for large datasets.
 
 **Space Complexity:**
-* **Total Memory Footprint:** $\mathcal{O}(N^2)$
-* **Optimization:** Extracted diagonal broadcasting into 1D arrays to prevent $\mathcal{O}(N^3)$ allocations of redundant NxN intermediate matrices, ensuring stable execution without overloading the Garbage Collector.
+- **Total Memory Footprint:** $\mathcal{O}(N^2)$
+- **Optimization:** Extracted diagonal broadcasting into 1D arrays to prevent $\mathcal{O}(N^3)$ allocations of redundant NxN intermediate matrices, ensuring stable execution without overloading the Garbage Collector.
 ---
 
 ## Technologies & Principles
 
-* **Language:** Java
-* **Core Concepts:** 
+- **Language:** Java 21 / Maven
+- **Core Concepts:** 
   * Cache Locality & Hardware-Aware Design
+  * JVM Benchmarking (JIT Warm-ups)
   * Dynamic 1D-to-2D Index Mapping
   * Matrix Operations & Linear Algebra
   * Priority Queues (Max-Heap)
-  * Object-Oriented Design (Clean Interfaces & Polymorphism)
+  * Continuous Integration (GitHub Actions)
 
 ---
 
 ## Project Structure
 
 ```text
+├── .github/workflows/   # CI/CD pipelines (Maven Build & Test)
 ├── src/
-│   ├── DemoHRClassifier.java    # End-to-end ML pipeline orchestration
-│   ├── FlatMatrix.java          # High-performance 1D array-based matrix implementation
-│   ├── Matrix.java              # Core matrix interface
-│   ├── MatrixOperations.java    # Linear algebra (normalization, vectorized distances)
-│   ├── ModelEvaluator.java      # Statistical metrics and accuracy evaluation
-│   └── PerformanceBenchmark.java # CPU cache locality benchmark vs 2D arrays
-└── resources/
-    ├── hr_train_data.csv        # Historical military placement data
-    └── hr_test_data.csv         # New recruits data for inference
+│   ├── main/java/       # Source Code (DemoHRClassifier, FlatMatrix, MatrixOperations, etc.)
+│   └── test/java/       # JUnit Test Suites
+├── resources/           # Datasets (hr_train_data.csv, hr_test_data.csv)
+└── pom.xml              # Maven dependencies and build configuration
 ```
 
 ## Quick Start / How to Run
 To execute the complete k-NN machine learning pipeline:
-1. Clone the repository.
-2. Ensure you have **Java 11+** installed.
-3. Run the `DemoHRClassifier` main class. It will automatically load the training and testing CSV datasets from the `resources` directory, execute the model, and print the accuracy metrics to the console.
+1. Clone the repository via Git: `git clone https://github.com/TalArbiv31/knn-classifier-matrix-optimization.git`
+2. Open the project in IntelliJ IDEA (Open as Project -> select `pom.xml`).
+3. Run the `DemoHRClassifier` main class. It will automatically load the CSV datasets from the `resources` directory, execute the model, and print the accuracy metrics (~89%) to the console.
 
 To run the cache-locality benchmark:
-* Execute the `PerformanceBenchmark` class to see the live execution time differences between `FlatMatrix` and standard 2D arrays on your specific CPU architecture.
+- Execute the `PerformanceBenchmark` class to observe the execution time differences and JIT warm-up phases between `FlatMatrix` and standard 2D arrays.
